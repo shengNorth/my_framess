@@ -125,7 +125,6 @@ public:
     {
         m_shadowBackPixmap = NinePatchScalePixmap(":/button/border_shadow.png",
             m_shadowSize, m_shadowSize, this->width(), this->height());
-m_shadowBackPixmap.save("D:/123.png");
         return QWidget::resizeEvent(event);
     }
 
