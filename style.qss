@@ -1,0 +1,36 @@
+﻿/*
+ * titleBar
+ */
+MuTitleBar#titleBar {
+    background-color: #c62f2f;
+}
+MuTitleBar#aeroTitleBar {
+    background-color: #4696ff;
+}
+
+QPushButton#minimizeButton{background:transparent;border:none;image:url(:/button/min_normal.png)}
+QPushButton#minimizeButton:hover{background:transparent;border:none;image:url(:/button/min_hover.png)}
+QPushButton#minimizeButton:pressed{background:transparent;border:none;image:url(:/button/min_press.png)}
+
+QPushButton#maximizeButton[maximizeProperty=maximize]{background:transparent;border:none;image:url(:/button/max_normal.png)}
+QPushButton#maximizeButton[maximizeProperty=maximize]:hover{background:transparent;border:none;image:url(:/button/max_hover.png)}
+QPushButton#maximizeButton[maximizeProperty=maximize]:pressed{background:transparent;border:none;image:url(:/button/max_press.png)}
+
+QPushButton#maximizeButton[maximizeProperty=restore]{background:transparent;border:none;image:url(:/button/restore_normal.png)}
+QPushButton#maximizeButton[maximizeProperty=restore]:hover{background:transparent;border:none;image:url(:/button/restore_hover.png)}
+QPushButton#maximizeButton[maximizeProperty=restore]:pressed{background:transparent;border:none;image:url(:/button/restore_press.png)}
+
+QPushButton#closeButton{background:transparent;border:none;image:url(:/button/close_normal.png)}
+QPushButton#closeButton:hover{background:transparent;border:none;image:url(:/button/close_hover.png)}
+QPushButton#closeButton:pressed{background:transparent;border:none;image:url(:/button/close_press.png)}
+
+QLabel#titleLabel {
+    color: white;
+    font-family: 'Microsoft Yahei';
+}
+/*************************************************/
+
+QLabel#dialogTitleLabel {
+    color: black;
+    font-family: 'Microsoft Yahei';
+}

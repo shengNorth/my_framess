@@ -1,0 +1,21 @@
+<RCC>
+    <qresource prefix="/">
+        <file>style.qss</file>
+        <file>button/close_hover.png</file>
+        <file>button/close_normal.png</file>
+        <file>button/close_press.png</file>
+        <file>button/max_hover.png</file>
+        <file>button/max_normal.png</file>
+        <file>button/max_press.png</file>
+        <file>button/min_hover.png</file>
+        <file>button/min_normal.png</file>
+        <file>button/min_press.png</file>
+        <file>button/restore_hover.png</file>
+        <file>button/restore_normal.png</file>
+        <file>button/restore_press.png</file>
+        <file>button/setting_hover.png</file>
+        <file>button/setting_nor.png</file>
+        <file>button/setting_press.png</file>
+        <file>button/border_shadow.png</file>
+    </qresource>
+</RCC>
