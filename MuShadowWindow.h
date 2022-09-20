@@ -30,7 +30,7 @@ class QLineEdit;
 class QLabel;
 
 //继承自QDialog,将声明和实现分开
-//使用背景图做为阴影
+//使用背景图做为阴影,最大化手动实现
 //使用framelessHalper来处理无边框, 按住标题栏移动等事件
 //最大化后,拖动标题栏还原,在framelessHelper中处理
 
