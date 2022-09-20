@@ -16,14 +16,12 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    MuShadowWidget.cpp \
     framelesshelper.cpp \
     main.cpp \
     titlebar.cpp \
     widget.cpp
 
 HEADERS += \
-    MuShadowWidget.h \
     MuShadowWindow.h \
     framelesshelper.h \
     titlebar.h \

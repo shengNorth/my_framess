@@ -194,6 +194,7 @@ void MuTitleBar::onClicked()
 {
     QPushButton *pButton = qobject_cast<QPushButton *>(sender());
     QWidget *pWindow = this->window();
+    qDebug() << pWindow << m_window;
     if (pWindow->isTopLevel()) {
         if (pButton == m_pMinimizeButton) {
             pWindow->showMinimized();
