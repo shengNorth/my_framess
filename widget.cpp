@@ -8,7 +8,9 @@ Widget::Widget(QWidget *parent)
     : MuShadowWindow<QWidget>(true, 12, parent)
     , ui(new Ui::Widget)
 {
-    ui->setupUi(this->clientWidget());
+    QWidget* center = new QWidget(this);
+    ui->setupUi(center);
+    this->setClientWidget(center);
     this->resize(800,600);
 }
 

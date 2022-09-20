@@ -33,7 +33,7 @@ class MuShadowWidget : public QWidget
 {
     Q_OBJECT
 public:
-    MuShadowWidget(int shadowSize, bool canResize, QWidget *parent = nullptr);
+    MuShadowWidget(int shadowSize, QWidget *parent = nullptr);
 
     virtual void paintEvent(QPaintEvent *e);
 
