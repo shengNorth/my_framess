@@ -16,12 +16,10 @@
 #include <QWidget>
 #include <QVBoxLayout>
 #include <QIcon>
-#include <QDebug>
-#include <QPushButton>
 #include <QDialog>
 #include <QMessageBox>
-#include <QResizeEvent>
 #include <QPixmap>
+#include <QDesktopWidget>
 #include "titlebar.h"
 #include "framelesshelper.h"
 
@@ -29,55 +27,102 @@ class QPainter;
 class QLineEdit;
 class QLabel;
 
-//继承自QDialog,将声明和实现分开
-//使用背景图做为阴影,最大化手动实现
-//使用framelessHalper来处理无边框, 按住标题栏移动等事件
-//最大化后,拖动标题栏还原,在framelessHelper中处理
-
 template <class Base = QWidget>
 class MuShadowWindow : public Base
 {
 public:
-    explicit MuShadowWindow(bool canResize, int shadowSize, QWidget *parent = nullptr)
+    explicit MuShadowWindow(QWidget *parent = nullptr, int shadowSize = 6)
         : Base(parent)
     {
-        m_shadowSize= 6;
+        m_shadowWidth = shadowSize;
+
         Base *pT = this;
         pT->setAttribute(Qt::WA_TranslucentBackground, true);
         pT->setWindowFlags(Qt::FramelessWindowHint);
         pT->setContentsMargins(0, 0, 0, 0);
 
         m_vBoxLayout = new QVBoxLayout(pT);
-        m_vBoxLayout->setContentsMargins(m_shadowSize, m_shadowSize, m_shadowSize, m_shadowSize);
+        m_vBoxLayout->setContentsMargins(m_shadowWidth, m_shadowWidth, m_shadowWidth, m_shadowWidth);
         m_vBoxLayout->setSpacing(0);
 
-        // 窗口主要区域
-        m_titleBar =  new MuTitleBar(this, this, canResize);
+        //添加标题栏
+        m_titleBar =  new MuTitleBar(this, this);
+        m_titleBar->setFixedHeight(m_titleHeight);
         this->installEventFilter(m_titleBar);
         m_titleBar->setObjectName("titleBar");
         m_vBoxLayout->addWidget(m_titleBar);
 
-        //CenterWidget
+        //添加 CenterWidget
         m_pClientWidget = new QWidget(this);
         m_pClientWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
         m_vBoxLayout->addWidget(m_pClientWidget);
 
         this->setLayout(m_vBoxLayout);
 
-
         m_pHelper = new FramelessHelper(this);
         m_pHelper->activateOn(this);
-        m_pHelper->setTitleHeight(m_titleBar->height());
         m_pHelper->setWidgetResizable(true);
         m_pHelper->setWidgetMovable(true);
-        m_pHelper->setRubberBandOnMove(false);
-        m_pHelper->setRubberBandOnResize(false);
-
-
-        QObject::connect(m_titleBar, &MuTitleBar::HeightChanged, [this](const int &height) { m_pHelper->setTitleHeight(height); });
     }
 
 public:
+    void setTitleBarHeight(int height)
+    {
+        if (height < 0)
+            return;
+        m_titleHeight = height;
+        m_titleBar->setFixedHeight(height);
+    }
+
+    void setResizable(bool resizable) { m_pHelper->setWidgetResizable(resizable); }
+    void setMovable(bool movable) {m_pHelper->setWidgetMovable(movable); }
+
+    virtual void OnBtnMinClicked()
+    {
+         showMinimized();
+    }
+
+    virtual void OnBtnMaxClicked()
+    {
+        m_bMaximized = true;
+        m_restoreRect = geometry();
+
+        int currentScreen = QApplication::desktop()->screenNumber(this);//程序所在的屏幕编号
+        QRect rect = QApplication::desktop()->availableGeometry(currentScreen);//程序所在屏幕可用尺寸
+        setGeometry(rect.left() - m_shadowWidth, rect.top() - m_shadowWidth,
+                     rect.width() + m_shadowWidth * 2, rect.height() + m_shadowWidth * 2);
+    }
+
+    virtual void OnBtnRestoreClicked()
+    {
+        m_bMaximized = false;
+        setGeometry(m_restoreRect);
+    }
+
+    virtual void OnBtnCloseClicked()
+    {
+        close();
+    }
+
+    bool IsMaxed() const { return m_bMaximized; }
+    int GetShadowWidth() const { return m_shadowWidth; }
+    int GetBorderWidth() const { return m_borderWidth; }
+    int GetTitleHeight() const { return m_titleHeight; }
+    QWidget* GetClientWidget()   { return m_pClientWidget; }
+    MuTitleBar* GetTitleBar() { return m_titleBar; }
+
+    void SetResizeable(bool enable) { m_pHelper->setWidgetResizable(enable); }
+    bool GetResizeable() const { return m_pHelper->widgetResizable(); }
+    void SetMoveable(bool enable) { m_pHelper->setWidgetMovable(enable); }
+    bool GetMoveable() const { return m_pHelper->widgetMovable(); }
+    void SetHasMaxFun(bool has){ m_bHasMaxFun = has; ShowMaxBtn(has);}
+    bool GetHasMaxFun() const { return m_bHasMaxFun; }
+
+    //是否显示最大化最小化按钮
+    void ShowMinBtn(bool show) { m_titleBar->setMinimumVisible(show);}
+    void ShowMaxBtn(bool show) { m_titleBar->setMaximumVisible(show);}
+
+protected:
     QPixmap NinePatchScalePixmap(QString picName, int iHorzSplit, int iVertSplit, int DstWidth, int DstHeight)
     {
         QPixmap* pix = new QPixmap(picName);
@@ -126,47 +171,36 @@ public:
     }
 
     // 每次窗口发生变化，就重新生成一张背景图，适用于可拉伸的窗口，也适用于未指定大小的窗口;
-    void resizeEvent(QResizeEvent *event)
+    virtual void resizeEvent(QResizeEvent *event) override
     {
         m_shadowBackPixmap = NinePatchScalePixmap(":/button/border_shadow.png",
-            m_shadowSize, m_shadowSize, this->width(), this->height());
+            m_shadowWidth, m_shadowWidth, this->width(), this->height());
         return QWidget::resizeEvent(event);
     }
 
-
-    // 直接绘制阴影边框即可;
-    void paintEvent(QPaintEvent *event)
+    virtual void paintEvent(QPaintEvent *event) override
     {
         QPainter painter(this);
         painter.drawPixmap(this->rect(), m_shadowBackPixmap);
         // 绘制白色背景,因为窗口背景设置为透明;
-        painter.fillRect(this->rect().adjusted(m_shadowSize, m_shadowSize, -m_shadowSize, -m_shadowSize),
+        painter.fillRect(this->rect().adjusted(m_shadowWidth, m_shadowWidth, -m_shadowWidth, -m_shadowWidth),
                          QBrush(Qt::white));
     }
-    QWidget *clientWidget() const { return m_pClientWidget; }
-    MuTitleBar *titleBar() const { return m_titleBar; }
-    void setRubberBandOnMove(bool enable) { m_pHelper->setRubberBandOnMove(enable); }
-    void setRubberBandOnResize(bool enable) { m_pHelper->setRubberBandOnResize(enable); }
-    void setTitleBarHeight(int height)
-    {
-        if (height < 0)
-            return;
-
-        m_titleBar->setFixedHeight(height);
-        m_pHelper->setTitleHeight(height);
-    }
-
-    void setResizable(bool resizable) { m_pHelper->setWidgetResizable(resizable); }
-    void setMovable(bool movable) {m_pHelper->setWidgetMovable(movable); }
-
 private:
-    int m_borderSize;
-    int m_shadowSize;
-    QWidget *m_pClientWidget;
-    QVBoxLayout *m_vBoxLayout;
-    FramelessHelper*    m_pHelper;
-    MuTitleBar*     m_titleBar;
-    QPixmap         m_shadowBackPixmap;
+
+    bool        m_bMaximized = false;       //当前是否为最大化状态
+    bool        m_bHasMaxFun = true;        //是否有最大化功能
+    int         m_borderWidth = 5;
+    int         m_shadowWidth = 20;
+    int         m_titleHeight = 32;
+
+
+    QRect               m_restoreRect;      //restore rect
+    QWidget*            m_pClientWidget = nullptr;
+    QPixmap             m_shadowBackPixmap;
+    MuTitleBar*         m_titleBar = nullptr;
+    QVBoxLayout*        m_vBoxLayout = nullptr;
+    FramelessHelper*    m_pHelper = nullptr;
 };
 
 typedef MuShadowWindow<QWidget> MuCustomWindowWidget;

@@ -17,41 +17,23 @@
 
 class QLabel;
 class QPushButton;
+
+template<typename T>
+class MuShadowWindow;
+
 class  MuTitleBar : public QWidget
 {
     Q_OBJECT
 public:
-    explicit MuTitleBar(QWidget *parent, QWidget *window, bool canResize);
+    explicit MuTitleBar(QWidget *parent, QWidget *window);
     ~MuTitleBar();
 
-    /**
-     * @brief setMinimumVisible 设置最小化按钮是否可见
-     * @param minimum
-     */
     void setMinimumVisible(bool minimum);
-    /**
-     * @brief setMaximumVisible 设计最大化还原按钮是否可见
-     * @param maximum
-     */
     void setMaximumVisible(bool maximum);
 
-    /**
-     * @brief setTitleHeight
-     *  改变标题栏的高度
-     *  \warning
-     *  如果通过其它函数改变标题栏高度，标题栏的某些区域可能不能拖动窗口
-     *  或者标题栏以外的区域可能可以拖动窗口
-     * @param height
-     */
     void setTitleHeight(int height);
 
-    /**
-     * @brief customWidget
-     *  自定义添加内容。除按钮图标标题之外的widget
-     * @return
-     */
     QWidget *customWidget() const;
-
     QPushButton *minimizeButton() const;
     QPushButton *maximizeButton() const;
     QPushButton *closeButton() const;
@@ -99,8 +81,8 @@ private:
     QPushButton *m_pMaximizeButton;
     QPushButton *m_pCloseButton;
     QWidget*    m_pCustomWidget; // 图标，标题，最大最小关闭按钮之外，自定义添加的内容
-    QWidget*    m_window;
-    bool        m_canResize;
+
+    MuShadowWindow<QWidget>*    m_pWindow = nullptr;
 };
 
 #endif // MUTITLEBAR_H

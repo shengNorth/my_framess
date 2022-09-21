@@ -13,6 +13,9 @@
 class WidgetData;
 class FramelessHelper;
 
+template<typename T>
+class MuShadowWindow;
+
 class LinuxRubberBand : public QRubberBand
 {
 public:
@@ -49,7 +52,7 @@ class CursorPosCalculator
 public:
     explicit CursorPosCalculator();
     void reset();
-    void recalculate(const QPoint &globalMousePos, const QRect &frameRect);
+    void recalculate(const QPoint &gMousePos, QRect frameRect, int shadowWidth, int borderWidth);
 
 public:
     bool m_bOnEdges = true;
@@ -61,9 +64,6 @@ public:
     bool m_bOnBottomLeftEdge = true;
     bool m_bOnTopRightEdge = true;
     bool m_bOnBottomRightEdge = true;
-
-    static int m_nBorderWidth;
-    static int m_nTitleHeight;
 };
 
 /*****
@@ -78,16 +78,12 @@ public:
     QWidget *widget();
     // 处理鼠标事件-划过、厉害、按下、释放、移动
     void handleWidgetEvent(QEvent *event);
-    // 更新橡皮筋状态
-    void updateRubberBandStatus();
 
 private:
     // 更新鼠标样式
     void updateCursorShape(const QPoint &gMousePos);
     // 重置窗体大小
     void resizeWidget(const QPoint &gMousePos);
-    // 移动窗体
-    void moveWidget(const QPoint &gMousePos);
     // 处理鼠标按下
     void handleMousePressEvent(QMouseEvent *event);
     // 处理鼠标释放
@@ -101,15 +97,12 @@ private:
 
 private:
     FramelessHelper*    m_pHelper = nullptr;
-    LinuxRubberBand*    m_pRubberBand;
-    QWidget *m_pWidget;
-    QPoint m_ptDragPos;
+    MuShadowWindow<QWidget>* m_pWidget;
+    QPoint m_startMovePos;
+    QRect m_resizeDlg;
     CursorPosCalculator m_pressedMousePos;
-    CursorPosCalculator m_moveMousePos;
-    bool m_bCursorShapeChanged;
     bool m_bLeftButtonPressed;          //鼠标是否按下
     bool m_bLeftButtonTitlePressed;     //鼠标是否按在标题栏上
-    Qt::WindowFlags m_windowFlags;
 };
 
 class FramelessHelper : public QObject
@@ -125,21 +118,9 @@ public:
     void setWidgetMovable(bool movable);
     // 设置窗体缩放
     void setWidgetResizable(bool resizable);
-    // 设置橡皮筋移动
-    void setRubberBandOnMove(bool movable);
-    // 设置橡皮筋缩放
-    void setRubberBandOnResize(bool resizable);
-    // 设置边框的宽度
-    void setBorderWidth(uint width);
-    // 设置标题栏高度
-    void setTitleHeight(uint height);
 
     bool widgetResizable();
     bool widgetMovable();
-    bool rubberBandOnMove();
-    bool rubberBandOnResisze();
-    uint borderWidth();
-    uint titleHeight();
 
 protected:
     // 事件过滤，进行移动、缩放等
@@ -148,8 +129,6 @@ protected:
 public:
     bool m_bWidgetMovable = true;           //是否可移动
     bool m_bWidgetResizable = true;         //是否可缩放
-    bool m_bRubberBandOnResize = true;      //是否支持橡皮筋缩放
-    bool m_bRubberBandOnMove = true;        //是否支持橡皮筋移动
 
 private:
     WidgetData* m_widgetData = nullptr;

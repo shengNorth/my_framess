@@ -24,14 +24,12 @@
 #include <QPainter>
 #include "titlebar.h"
 #include "framelesshelper.h"
+#include "MuShadowWindow.h"
 
-MuTitleBar::MuTitleBar(QWidget *parent, QWidget *window, bool canResize)
+MuTitleBar::MuTitleBar(QWidget *parent, QWidget *window)
     : QWidget(parent)
-    , m_window(window)
-    , m_canResize(canResize)
 {
-    setFixedHeight(CursorPosCalculator::m_nTitleHeight);
-
+    m_pWindow = static_cast<MuShadowWindow<QWidget>*>(window);
     m_pIconLabel = new QLabel(this);
     m_pTitleLabel = new QLabel(this);
     m_pMinimizeButton = new QPushButton(this);
@@ -83,6 +81,8 @@ MuTitleBar::MuTitleBar(QWidget *parent, QWidget *window, bool canResize)
     connect(m_pMinimizeButton, SIGNAL(clicked(bool)), this, SLOT(onClicked()));
     connect(m_pMaximizeButton, SIGNAL(clicked(bool)), this, SLOT(onClicked()));
     connect(m_pCloseButton, SIGNAL(clicked(bool)), this, SLOT(onClicked()));
+
+    updateMaximize();
 }
 MuTitleBar::~MuTitleBar()
 {
@@ -113,26 +113,6 @@ void MuTitleBar::setTitleHeight(int height)
     emit HeightChanged(height);
 }
 
-QWidget *MuTitleBar::customWidget() const
-{
-    return m_pCustomWidget;
-}
-
-QPushButton *MuTitleBar::minimizeButton() const
-{
-    return m_pMinimizeButton;
-}
-
-QPushButton *MuTitleBar::maximizeButton() const
-{
-    return m_pMaximizeButton;
-}
-
-QPushButton *MuTitleBar::closeButton() const
-{
-    return m_pCloseButton;
-}
-
 QLabel *MuTitleBar::titleLabel() const
 {
     return m_pTitleLabel;
@@ -151,8 +131,10 @@ void MuTitleBar::paintEvent(QPaintEvent *e)
 void MuTitleBar::mouseDoubleClickEvent(QMouseEvent *event)
 {
     Q_UNUSED(event);
-
-    emit m_pMaximizeButton->clicked();
+    if (m_pWindow->GetHasMaxFun())
+    {
+        emit m_pMaximizeButton->clicked();
+    }
 }
 
 bool MuTitleBar::eventFilter(QObject *obj, QEvent *event)
@@ -173,18 +155,9 @@ bool MuTitleBar::eventFilter(QObject *obj, QEvent *event)
             return true;
         }
     }
-    case QEvent::WindowStateChange:
-        updateMaximize();
-        return true;
-
     case QEvent::Resize:
-        if (m_window->isMaximized()) {
-            QResizeEvent *re = reinterpret_cast<QResizeEvent *>(event);
-            if (re != nullptr) {
-            }
-        }
         updateMaximize();
-        return false;   //继续处理
+        return false;       //将消息继续传递,交给m_pWidget的resizeEvent处理,生成合适的背景图片
     default:
         return QWidget::eventFilter(obj, event);
     }
@@ -193,32 +166,36 @@ bool MuTitleBar::eventFilter(QObject *obj, QEvent *event)
 void MuTitleBar::onClicked()
 {
     QPushButton *pButton = qobject_cast<QPushButton *>(sender());
-    QWidget *pWindow = this->window();
-    qDebug() << pWindow << m_window;
-    if (pWindow->isTopLevel()) {
-        if (pButton == m_pMinimizeButton) {
-            pWindow->showMinimized();
+    if (m_pWindow == nullptr) return;
+    if (m_pWindow->isTopLevel())
+    {
+        if (pButton == m_pMinimizeButton)
+        {
+            m_pWindow->OnBtnMinClicked();      //最小化
         }
-        else if (pButton == m_pMaximizeButton) {
-            if (!m_canResize)
-                return;
-
-            if (m_window->isMaximized()) {
-                m_window->showNormal();
-            } else {
-                m_window->showMaximized();
+        else if (pButton == m_pMaximizeButton)
+        {
+            if (m_pWindow->IsMaxed())
+            {
+                m_pWindow->OnBtnRestoreClicked();  //恢复
+            }
+            else
+            {
+                m_pWindow->OnBtnMaxClicked();      //最大化
             }
         }
-        else if (pButton == m_pCloseButton)  {
-            pWindow->close();
+        else if (pButton == m_pCloseButton)
+        {
+            m_pWindow->OnBtnCloseClicked();        //关闭
         }
+        updateMaximize();                       //更新按钮样式
     }
 }
 
 void MuTitleBar::updateMaximize()
 {
-    if (m_window != nullptr) {
-        bool bMaximize = m_window->isMaximized();
+    if (m_pWindow != nullptr) {
+        bool bMaximize = m_pWindow->IsMaxed();
         if (bMaximize) {
             m_pMaximizeButton->setToolTip(tr("Restore"));
             m_pMaximizeButton->setProperty("maximizeProperty", "restore");
@@ -226,5 +203,7 @@ void MuTitleBar::updateMaximize()
             m_pMaximizeButton->setToolTip(tr("Maximize"));
             m_pMaximizeButton->setProperty("maximizeProperty", "maximize");
         }
+        style()->unpolish(m_pMaximizeButton);
+        style()->polish(m_pMaximizeButton);
     }
 }

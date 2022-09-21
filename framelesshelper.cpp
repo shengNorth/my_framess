@@ -1,7 +1,10 @@
 ﻿#include "framelesshelper.h"
+#include "MuShadowWindow.h"
 
-int CursorPosCalculator::m_nBorderWidth = 5;
-int CursorPosCalculator::m_nTitleHeight = 30;
+#include <QApplication>
+#include <QDesktopWidget>
+
+
 /***** CursorPosCalculator *****/
 CursorPosCalculator::CursorPosCalculator()
 {
@@ -21,34 +24,36 @@ void CursorPosCalculator::reset()
     m_bOnBottomRightEdge = false;
 }
 
-void CursorPosCalculator::recalculate(const QPoint &gMousePos, const QRect &frameRect)
+void CursorPosCalculator::recalculate(const QPoint &gMousePos, QRect frameRect, int shadowWidth, int borderWidth)
 {
     int globalMouseX = gMousePos.x();
     int globalMouseY = gMousePos.y();
 
+    //先移除外圈shadow部分,再计算鼠标位置,改变鼠标样式
+    frameRect.adjust(shadowWidth, shadowWidth, -shadowWidth, -shadowWidth);
+
     int frameX = frameRect.x();
     int frameY = frameRect.y();
-
     int frameWidth = frameRect.width();
     int frameHeight = frameRect.height();
-
+    
     m_bOnLeftEdge = (globalMouseX >= frameX &&
-                     globalMouseX <= frameX + m_nBorderWidth );
-
-    m_bOnRightEdge = (globalMouseX >= frameX + frameWidth - m_nBorderWidth &&
+                     globalMouseX <= frameX + borderWidth );
+    
+    m_bOnRightEdge = (globalMouseX >= frameX + frameWidth - borderWidth &&
                       globalMouseX <= frameX + frameWidth);
-
+    
     m_bOnTopEdge = (globalMouseY >= frameY &&
-                    globalMouseY <= frameY + m_nBorderWidth );
-
-    m_bOnBottomEdge = (globalMouseY >= frameY + frameHeight - m_nBorderWidth &&
+                    globalMouseY <= frameY + borderWidth );
+    
+    m_bOnBottomEdge = (globalMouseY >= frameY + frameHeight - borderWidth &&
                        globalMouseY <= frameY + frameHeight);
-
+    
     m_bOnTopLeftEdge = m_bOnTopEdge && m_bOnLeftEdge;
     m_bOnBottomLeftEdge = m_bOnBottomEdge && m_bOnLeftEdge;
     m_bOnTopRightEdge = m_bOnTopEdge && m_bOnRightEdge;
     m_bOnBottomRightEdge = m_bOnBottomEdge && m_bOnRightEdge;
-
+    
     m_bOnEdges = m_bOnLeftEdge || m_bOnRightEdge || m_bOnTopEdge || m_bOnBottomEdge;
 }
 
@@ -56,27 +61,18 @@ void CursorPosCalculator::recalculate(const QPoint &gMousePos, const QRect &fram
 WidgetData::WidgetData(FramelessHelper *pHelper, QWidget *pTopLevelWidget)
 {
     m_pHelper = pHelper;
-    m_pWidget = pTopLevelWidget;
+    m_pWidget = static_cast<MuShadowWindow<QWidget>*>(pTopLevelWidget);
     m_bLeftButtonPressed = false;
-    m_bCursorShapeChanged = false;
     m_bLeftButtonTitlePressed = false;
-    m_pRubberBand = nullptr;
 
-    m_windowFlags = m_pWidget->windowFlags();
     m_pWidget->setMouseTracking(true);
     m_pWidget->setAttribute(Qt::WA_Hover, true);
-
-    updateRubberBandStatus();
 }
 
 WidgetData::~WidgetData()
 {
     m_pWidget->setMouseTracking(false);
-    m_pWidget->setWindowFlags(m_windowFlags);
     m_pWidget->setAttribute(Qt::WA_Hover, false);
-
-    delete m_pRubberBand;
-    m_pRubberBand = nullptr;
 }
 
 QWidget *WidgetData::widget()
@@ -107,149 +103,104 @@ void WidgetData::handleWidgetEvent(QEvent *event)
     }
 }
 
-void WidgetData::updateRubberBandStatus()
-{
-    if (m_pHelper->m_bRubberBandOnMove || m_pHelper->m_bRubberBandOnResize) {
-        if (nullptr == m_pRubberBand) {
-            m_pRubberBand = new LinuxRubberBand(QRubberBand::Rectangle);
-        }
-    } else {
-        delete m_pRubberBand;
-        m_pRubberBand = NULL;
-    }
-}
 
 void WidgetData::updateCursorShape(const QPoint &gMousePos)
 {
-    if (m_pWidget->isFullScreen() || m_pWidget->isMaximized()) {
-        if (m_bCursorShapeChanged) {
-            m_pWidget->unsetCursor();
-        }
+    if (m_pWidget->IsMaxed()) {
+        m_pWidget->unsetCursor();
         return;
     }
 
-    m_moveMousePos.recalculate(gMousePos, m_pWidget->frameGeometry());
-
-    if(m_moveMousePos.m_bOnTopLeftEdge || m_moveMousePos.m_bOnBottomRightEdge) {
+    int shadowWidth = m_pWidget->GetShadowWidth();
+    int borderWidth = m_pWidget->GetBorderWidth();
+    m_pressedMousePos.recalculate(gMousePos, m_pWidget->frameGeometry(), shadowWidth, borderWidth);
+    
+    if(m_pressedMousePos.m_bOnTopLeftEdge || m_pressedMousePos.m_bOnBottomRightEdge) {
         m_pWidget->setCursor( Qt::SizeFDiagCursor );
-        m_bCursorShapeChanged = true;
-    } else if(m_moveMousePos.m_bOnTopRightEdge || m_moveMousePos.m_bOnBottomLeftEdge) {
+    } else if(m_pressedMousePos.m_bOnTopRightEdge || m_pressedMousePos.m_bOnBottomLeftEdge) {
         m_pWidget->setCursor( Qt::SizeBDiagCursor );
-        m_bCursorShapeChanged = true;
-    } else if(m_moveMousePos.m_bOnLeftEdge || m_moveMousePos.m_bOnRightEdge) {
+    } else if(m_pressedMousePos.m_bOnLeftEdge || m_pressedMousePos.m_bOnRightEdge) {
         m_pWidget->setCursor( Qt::SizeHorCursor );
-        m_bCursorShapeChanged = true;
-    } else if(m_moveMousePos.m_bOnTopEdge || m_moveMousePos.m_bOnBottomEdge) {
+    } else if(m_pressedMousePos.m_bOnTopEdge || m_pressedMousePos.m_bOnBottomEdge) {
         m_pWidget->setCursor( Qt::SizeVerCursor );
-        m_bCursorShapeChanged = true;
-    } else {
-        if (m_bCursorShapeChanged) {
-            m_pWidget->unsetCursor();
-            m_bCursorShapeChanged = false;
-        }
+    } else{
+        m_pWidget->unsetCursor();
     }
 }
 
-void WidgetData::resizeWidget(const QPoint &gMousePos)
+void WidgetData::resizeWidget(const QPoint &pos)
 {
-    QRect origRect;
+    QRect origRect = m_resizeDlg;
+    qDebug() << m_resizeDlg;
+    int shadowWidget = m_pWidget->GetShadowWidth();
 
-    if (m_pHelper->m_bRubberBandOnResize) {
-        origRect = m_pRubberBand->frameGeometry();
-    } else {
-        origRect = m_pWidget->frameGeometry();
-    }
+        int left = origRect.left();
+        int top = origRect.top();
+        int right = origRect.right();
+        int bottom = origRect.bottom();
+        origRect.getCoords(&left, &top, &right, &bottom);
 
-    int left = origRect.left();
-    int top = origRect.top();
-    int right = origRect.right();
-    int bottom = origRect.bottom();
-    origRect.getCoords(&left, &top, &right, &bottom);
+        int minWidth = 200;
+        int minHeight = 100;
 
-    //int minWidth = m_pWidget->minimumWidth();
-    //int minHeight = m_pWidget->minimumHeight();
-    int minWidth = 40;
-    int minHeight = 40;
-
-    if (m_pressedMousePos.m_bOnTopLeftEdge) {
-        left = gMousePos.x();
-        top = gMousePos.y();
-    } else if (m_pressedMousePos.m_bOnBottomLeftEdge) {
-        left = gMousePos.x();
-        bottom = gMousePos.y();
-    } else if (m_pressedMousePos.m_bOnTopRightEdge) {
-        right = gMousePos.x();
-        top = gMousePos.y();
-    } else if (m_pressedMousePos.m_bOnBottomRightEdge) {
-        right = gMousePos.x();
-        bottom = gMousePos.y();
-    } else if (m_pressedMousePos.m_bOnLeftEdge) {
-        left = gMousePos.x();
-    } else if (m_pressedMousePos.m_bOnRightEdge) {
-        right = gMousePos.x();
-    } else if (m_pressedMousePos.m_bOnTopEdge) {
-        top = gMousePos.y();
-    } else if (m_pressedMousePos.m_bOnBottomEdge) {
-        bottom = gMousePos.y();
-    }
-
-    QRect newRect(QPoint(left, top), QPoint(right, bottom));
-
-    if (newRect.isValid()) {
-        if (minWidth > newRect.width()) {
-            if (left != origRect.left()) {
-                newRect.setLeft(origRect.left());
-            } else {
-                newRect.setRight(origRect.right());
-            }
-        }
-        if (minHeight > newRect.height()) {
-            if (top != origRect.top()) {
-                newRect.setTop(origRect.top());
-            } else {
-                newRect.setBottom(origRect.bottom());
-            }
+        if (m_pressedMousePos.m_bOnTopLeftEdge) {
+            left = pos.x() - shadowWidget;
+            top = pos.y() - shadowWidget;
+        } else if (m_pressedMousePos.m_bOnBottomLeftEdge) {
+            left = pos.x() - shadowWidget;
+            bottom = pos.y() + shadowWidget;
+        } else if (m_pressedMousePos.m_bOnTopRightEdge) {
+            right = pos.x() + shadowWidget;
+            top = pos.y() - shadowWidget;
+        } else if (m_pressedMousePos.m_bOnBottomRightEdge) {
+            right = pos.x() + shadowWidget;
+            bottom = pos.y() + shadowWidget;
+        } else if (m_pressedMousePos.m_bOnLeftEdge) {
+            left = pos.x() - shadowWidget;
+        } else if (m_pressedMousePos.m_bOnRightEdge) {
+            right = pos.x() + shadowWidget;
+        } else if (m_pressedMousePos.m_bOnTopEdge) {
+            top = pos.y() - shadowWidget;
+        } else if (m_pressedMousePos.m_bOnBottomEdge) {
+            bottom = pos.y() + shadowWidget;
         }
 
-        if (m_pHelper->m_bRubberBandOnResize) {
-            m_pRubberBand->setGeometry(newRect);
-        } else {
+        QRect newRect(QPoint(left, top), QPoint(right, bottom));
+
+        if (newRect.isValid())
+        {
+            if (newRect.width() < minWidth) {
+                if (left != origRect.left())
+                    newRect.setLeft(origRect.right() - minWidth);
+                else
+                    newRect.setRight(origRect.left() + minWidth);
+            }
+            if (newRect.height() < minHeight) {
+                if (top != origRect.top())
+                    newRect.setTop(origRect.bottom() - minHeight);
+                else
+                    newRect.setBottom(origRect.top() + minHeight);
+            }
             m_pWidget->setGeometry(newRect);
         }
-    }
-}
-
-void WidgetData::moveWidget(const QPoint &gMousePos)
-{
-    if (m_pHelper->m_bRubberBandOnMove) {
-        m_pRubberBand->move(gMousePos - m_ptDragPos);
-    } else {
-        m_pWidget->move(gMousePos - m_ptDragPos);
-    }
 }
 
 void WidgetData::handleMousePressEvent(QMouseEvent *event)
 {
-    if (event->button() == Qt::LeftButton) {
+    if (event->button() == Qt::LeftButton)
+    {
         m_bLeftButtonPressed = true;
-        m_bLeftButtonTitlePressed = event->pos().y() < m_moveMousePos.m_nTitleHeight;
+        int shadowWidth = m_pWidget->GetShadowWidth();
+        int titleHeight = m_pWidget->GetTitleHeight();
 
-        QRect frameRect = m_pWidget->frameGeometry();
-        QRect moveRect(frameRect.x(), frameRect.y(), frameRect.width(), 30);
-        m_pressedMousePos.recalculate(event->globalPos(), frameRect);
-
-        m_ptDragPos = event->globalPos() - frameRect.topLeft();
-
-        if (m_pressedMousePos.m_bOnEdges) {
-            if (m_pHelper->m_bRubberBandOnResize) {
-                m_pRubberBand->setGeometry(frameRect);
-                m_pRubberBand->show();
-            }
-        } else if (m_pHelper->m_bRubberBandOnMove) {
-            if (moveRect.contains(event->globalPos())) {
-                m_pRubberBand->setGeometry(frameRect);
-                m_pRubberBand->show();
-            }
+        m_bLeftButtonTitlePressed = event->pos().y() > shadowWidth && event->pos().y() < shadowWidth + titleHeight;
+        if (m_bLeftButtonTitlePressed)
+        {
+            m_startMovePos = event->globalPos();        //记录按下标题栏时候鼠标的位置
+        }
+        if (m_pressedMousePos.m_bOnEdges)
+        {
+            m_resizeDlg = m_pWidget->frameGeometry();
         }
     }
 }
@@ -260,10 +211,6 @@ void WidgetData::handleMouseReleaseEvent(QMouseEvent *event)
         m_bLeftButtonPressed = false;
         m_bLeftButtonTitlePressed = false;
         m_pressedMousePos.reset();
-        if (m_pRubberBand && m_pRubberBand->isVisible()) {
-            m_pRubberBand->hide();
-            m_pWidget->setGeometry(m_pRubberBand->geometry());
-        }
     }
 }
 
@@ -273,7 +220,37 @@ void WidgetData::handleMouseMoveEvent(QMouseEvent *event)
         if (m_pHelper->m_bWidgetResizable && m_pressedMousePos.m_bOnEdges) {
             resizeWidget(event->globalPos());
         } else if (m_pHelper->m_bWidgetMovable && m_bLeftButtonTitlePressed) {
-            moveWidget(event->globalPos());
+
+            QPoint moveOffset = event->globalPos() - m_startMovePos;
+
+            if (m_pWidget->IsMaxed()
+                    && (moveOffset.x() != 0 || moveOffset.y() != 0))
+            {
+                m_pWidget->OnBtnRestoreClicked();
+                QRect wndRect = m_pWidget->frameGeometry();//窗口大小
+                QRect screenRect = QApplication::desktop()->availableGeometry(
+                            QApplication::desktop()->screenNumber(m_pWidget));//程序所在屏幕可用大小
+
+                int xPos = event->globalPos().x() - wndRect.width() / 2;
+                if (xPos < screenRect.left())
+                {
+                    //超出左边界
+                    xPos = screenRect.left();
+                }
+                else if (xPos + wndRect.width() > screenRect.right())
+                {
+                    //超出右边界
+                    xPos = screenRect.right() - wndRect.width();
+                }
+                m_pWidget->move(xPos, 0);
+            }
+
+            {
+                //移动窗口
+                QPoint widgetPos = m_pWidget->pos();
+                m_startMovePos = event->globalPos();
+                m_pWidget->move(widgetPos.x() + moveOffset.x(), widgetPos.y() + moveOffset.y());
+            }
         }
     } else if (m_pHelper->m_bWidgetResizable) {
         updateCursorShape(event->globalPos());
@@ -301,8 +278,6 @@ FramelessHelper::FramelessHelper(QObject *parent)
 {
     m_bWidgetMovable = true;
     m_bWidgetResizable = true;
-    m_bRubberBandOnResize = false;
-    m_bRubberBandOnMove = false;
 }
 
 FramelessHelper::~FramelessHelper()
@@ -334,12 +309,6 @@ void FramelessHelper::activateOn(QWidget *topLevelWidget)
     }
 }
 
-void FramelessHelper::setRubberBandOnMove(bool movable)
-{
-    m_bRubberBandOnMove = movable;
-    m_widgetData->updateRubberBandStatus();
-}
-
 void FramelessHelper::setWidgetMovable(bool movable)
 {
     m_bWidgetMovable = movable;
@@ -348,26 +317,6 @@ void FramelessHelper::setWidgetMovable(bool movable)
 void FramelessHelper::setWidgetResizable(bool resizable)
 {
     m_bWidgetResizable = resizable;
-}
-
-void FramelessHelper::setRubberBandOnResize(bool resizable)
-{
-    m_bRubberBandOnResize = resizable;
-    m_widgetData->updateRubberBandStatus();
-}
-
-void FramelessHelper::setBorderWidth(uint width)
-{
-    if (width > 0) {
-        CursorPosCalculator::m_nBorderWidth = width;
-    }
-}
-
-void FramelessHelper::setTitleHeight(uint height)
-{
-    if (height > 0) {
-        CursorPosCalculator::m_nTitleHeight = height;
-    }
 }
 
 bool FramelessHelper::widgetMovable()
@@ -379,24 +328,3 @@ bool FramelessHelper::widgetResizable()
 {
     return m_bWidgetResizable;
 }
-
-bool FramelessHelper::rubberBandOnMove()
-{
-    return m_bRubberBandOnMove;
-}
-
-bool FramelessHelper::rubberBandOnResisze()
-{
-    return m_bRubberBandOnResize;
-}
-
-uint FramelessHelper::borderWidth()
-{
-    return CursorPosCalculator::m_nBorderWidth;
-}
-
-uint FramelessHelper::titleHeight()
-{
-    return CursorPosCalculator::m_nTitleHeight;
-}
-
