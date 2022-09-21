@@ -22,7 +22,8 @@ SOURCES += \
     widget.cpp
 
 HEADERS += \
-    MuShadowWindow.h \
+    ShadowWindow.h \
+    ShadowWindow.h \
     framelesshelper.h \
     titlebar.h \
     widget.h

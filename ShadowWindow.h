@@ -1,7 +1,7 @@
 ﻿/**
  * 自定义无边框窗体、对话框和提示框
  *
- * MuShadowWindow.h
+ * ShadowWindow.h
  * 所有自定义窗口的基类，定义窗口各个位置的布局
  *
  * FlyWM_
@@ -28,10 +28,10 @@ class QLineEdit;
 class QLabel;
 
 template <class Base = QWidget>
-class MuShadowWindow : public Base
+class ShadowWindow : public Base
 {
 public:
-    explicit MuShadowWindow(QWidget *parent = nullptr, int shadowSize = 6)
+    explicit ShadowWindow(QWidget *parent = nullptr, int shadowSize = 6)
         : Base(parent)
     {
         m_shadowWidth = shadowSize;
@@ -46,7 +46,7 @@ public:
         m_vBoxLayout->setSpacing(0);
 
         //添加标题栏
-        m_titleBar =  new MuTitleBar(this, this);
+        m_titleBar =  new CustomTitleBar(this, this);
         m_titleBar->setFixedHeight(m_titleHeight);
         this->installEventFilter(m_titleBar);
         m_titleBar->setObjectName("titleBar");
@@ -58,6 +58,8 @@ public:
         m_vBoxLayout->addWidget(m_pClientWidget);
 
         this->setLayout(m_vBoxLayout);
+
+        this->setWindowIcon(QIcon(":/button/close_hover.png"));
 
         m_pHelper = new FramelessHelper(this);
         m_pHelper->activateOn(this);
@@ -109,7 +111,7 @@ public:
     int GetBorderWidth() const { return m_borderWidth; }
     int GetTitleHeight() const { return m_titleHeight; }
     QWidget* GetClientWidget()   { return m_pClientWidget; }
-    MuTitleBar* GetTitleBar() { return m_titleBar; }
+    CustomTitleBar* GetTitleBar() { return m_titleBar; }
 
     void SetResizeable(bool enable) { m_pHelper->setWidgetResizable(enable); }
     bool GetResizeable() const { return m_pHelper->widgetResizable(); }
@@ -190,7 +192,7 @@ private:
 
     bool        m_bMaximized = false;       //当前是否为最大化状态
     bool        m_bHasMaxFun = true;        //是否有最大化功能
-    int         m_borderWidth = 5;
+    int         m_borderWidth = 3;
     int         m_shadowWidth = 20;
     int         m_titleHeight = 32;
 
@@ -198,13 +200,13 @@ private:
     QRect               m_restoreRect;      //restore rect
     QWidget*            m_pClientWidget = nullptr;
     QPixmap             m_shadowBackPixmap;
-    MuTitleBar*         m_titleBar = nullptr;
+    CustomTitleBar*         m_titleBar = nullptr;
     QVBoxLayout*        m_vBoxLayout = nullptr;
     FramelessHelper*    m_pHelper = nullptr;
 };
 
-typedef MuShadowWindow<QWidget> MuCustomWindowWidget;
-typedef MuShadowWindow<QDialog> MuCustomDialogWidget;
-typedef MuShadowWindow<QMessageBox> MuCustomMessageBoxWidget;
+typedef ShadowWindow<QWidget> MuCustomWindowWidget;
+typedef ShadowWindow<QDialog> MuCustomDialogWidget;
+typedef ShadowWindow<QMessageBox> MuCustomMessageBoxWidget;
 
 #endif // MUSHADOWWINDOW_H

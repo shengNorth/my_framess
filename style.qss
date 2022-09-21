@@ -1,10 +1,10 @@
 ﻿/*
  * titleBar
  */
-MuTitleBar#titleBar {
+CustomTitleBar#titleBar {
     background-color: #c62f2f;
 }
-MuTitleBar#aeroTitleBar {
+CustomTitleBar#aeroTitleBar {
     background-color: #4696ff;
 }
 

@@ -1,5 +1,5 @@
 ﻿#include "framelesshelper.h"
-#include "MuShadowWindow.h"
+#include "ShadowWindow.h"
 
 #include <QApplication>
 #include <QDesktopWidget>
@@ -61,7 +61,7 @@ void CursorPosCalculator::recalculate(const QPoint &gMousePos, QRect frameRect, 
 WidgetData::WidgetData(FramelessHelper *pHelper, QWidget *pTopLevelWidget)
 {
     m_pHelper = pHelper;
-    m_pWidget = static_cast<MuShadowWindow<QWidget>*>(pTopLevelWidget);
+    m_pWidget = static_cast<ShadowWindow<QWidget>*>(pTopLevelWidget);
     m_bLeftButtonPressed = false;
     m_bLeftButtonTitlePressed = false;
 
@@ -131,7 +131,6 @@ void WidgetData::updateCursorShape(const QPoint &gMousePos)
 void WidgetData::resizeWidget(const QPoint &pos)
 {
     QRect origRect = m_resizeDlg;
-    qDebug() << m_resizeDlg;
     int shadowWidget = m_pWidget->GetShadowWidth();
 
         int left = origRect.left();
@@ -193,7 +192,7 @@ void WidgetData::handleMousePressEvent(QMouseEvent *event)
         int shadowWidth = m_pWidget->GetShadowWidth();
         int titleHeight = m_pWidget->GetTitleHeight();
 
-        m_bLeftButtonTitlePressed = event->pos().y() > shadowWidth && event->pos().y() < shadowWidth + titleHeight;
+        m_bLeftButtonTitlePressed = event->pos().y() >= shadowWidth && event->pos().y() <= shadowWidth + titleHeight;
         if (m_bLeftButtonTitlePressed)
         {
             m_startMovePos = event->globalPos();        //记录按下标题栏时候鼠标的位置
@@ -217,12 +216,16 @@ void WidgetData::handleMouseReleaseEvent(QMouseEvent *event)
 void WidgetData::handleMouseMoveEvent(QMouseEvent *event)
 {
     if (m_bLeftButtonPressed) {
-        if (m_pHelper->m_bWidgetResizable && m_pressedMousePos.m_bOnEdges) {
+        if (m_pHelper->m_bWidgetResizable && m_pressedMousePos.m_bOnEdges)
+        {
+            //鼠标按在边界上,拖拽缩放
             resizeWidget(event->globalPos());
-        } else if (m_pHelper->m_bWidgetMovable && m_bLeftButtonTitlePressed) {
-
+        }
+        else if (m_pHelper->m_bWidgetMovable && m_bLeftButtonTitlePressed) {
+            //鼠标按在标题栏上拖拽
             QPoint moveOffset = event->globalPos() - m_startMovePos;
 
+            //已经是最大化状态,先恢复到先前大小,再随鼠标移动
             if (m_pWidget->IsMaxed()
                     && (moveOffset.x() != 0 || moveOffset.y() != 0))
             {
@@ -234,26 +237,30 @@ void WidgetData::handleMouseMoveEvent(QMouseEvent *event)
                 int xPos = event->globalPos().x() - wndRect.width() / 2;
                 if (xPos < screenRect.left())
                 {
-                    //超出左边界
-                    xPos = screenRect.left();
+                    xPos = screenRect.left();                       //超出左边界
                 }
                 else if (xPos + wndRect.width() > screenRect.right())
                 {
-                    //超出右边界
-                    xPos = screenRect.right() - wndRect.width();
+                    xPos = screenRect.right() - wndRect.width();    //超出右边界
                 }
-                m_pWidget->move(xPos, 0);
+
+                if (event->pos().y() < 15)
+                {
+                    m_pWidget->move(xPos, -15);
+                }
+                else
+                {
+                    m_pWidget->move(xPos, 0);
+                }
             }
 
             {
-                //移动窗口
+                //再随鼠标移动窗口
                 QPoint widgetPos = m_pWidget->pos();
                 m_startMovePos = event->globalPos();
                 m_pWidget->move(widgetPos.x() + moveOffset.x(), widgetPos.y() + moveOffset.y());
             }
         }
-    } else if (m_pHelper->m_bWidgetResizable) {
-        updateCursorShape(event->globalPos());
     }
 }
 

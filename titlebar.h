@@ -1,7 +1,7 @@
 ﻿/**
  * 自定义无边框窗体、对话框和提示框
  *
- * MuTitleBar.h
+ * CustomTitleBar.h
  * 自定义窗体的标题栏。
  *
  * FlyWM_
@@ -19,14 +19,14 @@ class QLabel;
 class QPushButton;
 
 template<typename T>
-class MuShadowWindow;
+class ShadowWindow;
 
-class  MuTitleBar : public QWidget
+class  CustomTitleBar : public QWidget
 {
     Q_OBJECT
 public:
-    explicit MuTitleBar(QWidget *parent, QWidget *window);
-    ~MuTitleBar();
+    explicit CustomTitleBar(QWidget *parent, QWidget *window);
+    ~CustomTitleBar();
 
     void setMinimumVisible(bool minimum);
     void setMaximumVisible(bool maximum);
@@ -75,14 +75,14 @@ private:
     void updateMaximize();
 
 private:
-    QLabel *m_pIconLabel;
-    QLabel *m_pTitleLabel;
-    QPushButton *m_pMinimizeButton;
-    QPushButton *m_pMaximizeButton;
-    QPushButton *m_pCloseButton;
-    QWidget*    m_pCustomWidget; // 图标，标题，最大最小关闭按钮之外，自定义添加的内容
+    QLabel*         m_pIconLabel;
+    QLabel*         m_pTitleLabel;
+    QPushButton*    m_pMinimizeButton;
+    QPushButton*    m_pMaximizeButton;
+    QPushButton*    m_pCloseButton;
+    QWidget*        m_pCustomWidget; // 图标，标题，最大最小关闭按钮之外，自定义添加的内容
 
-    MuShadowWindow<QWidget>*    m_pWindow = nullptr;
+    ShadowWindow<QWidget>*    m_pWindow = nullptr;
 };
 
 #endif // MUTITLEBAR_H

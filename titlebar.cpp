@@ -1,7 +1,7 @@
 ﻿/**
  * 自定义无边框窗体、对话框和提示框
  *
- * MuTitleBar.cpp
+ * CustomTitleBar.cpp
  * 自定义窗体的标题栏。
  *
  * FlyWM_
@@ -24,12 +24,12 @@
 #include <QPainter>
 #include "titlebar.h"
 #include "framelesshelper.h"
-#include "MuShadowWindow.h"
+#include "ShadowWindow.h"
 
-MuTitleBar::MuTitleBar(QWidget *parent, QWidget *window)
+CustomTitleBar::CustomTitleBar(QWidget *parent, QWidget *window)
     : QWidget(parent)
 {
-    m_pWindow = static_cast<MuShadowWindow<QWidget>*>(window);
+    m_pWindow = static_cast<ShadowWindow<QWidget>*>(window);
     m_pIconLabel = new QLabel(this);
     m_pTitleLabel = new QLabel(this);
     m_pMinimizeButton = new QPushButton(this);
@@ -84,12 +84,12 @@ MuTitleBar::MuTitleBar(QWidget *parent, QWidget *window)
 
     updateMaximize();
 }
-MuTitleBar::~MuTitleBar()
+CustomTitleBar::~CustomTitleBar()
 {
 
 }
 
-void MuTitleBar::setMinimumVisible(bool minimum)
+void CustomTitleBar::setMinimumVisible(bool minimum)
 {
     if (!minimum)
         m_pMinimizeButton->hide();
@@ -97,7 +97,7 @@ void MuTitleBar::setMinimumVisible(bool minimum)
         m_pMaximizeButton->show();
 }
 
-void MuTitleBar::setMaximumVisible(bool maximum)
+void CustomTitleBar::setMaximumVisible(bool maximum)
 {
     if (!maximum)
         m_pMaximizeButton->hide();
@@ -105,7 +105,7 @@ void MuTitleBar::setMaximumVisible(bool maximum)
         m_pMaximizeButton->show();
 }
 
-void MuTitleBar::setTitleHeight(int height)
+void CustomTitleBar::setTitleHeight(int height)
 {
     if (height < 0)
         height = 0;
@@ -113,12 +113,12 @@ void MuTitleBar::setTitleHeight(int height)
     emit HeightChanged(height);
 }
 
-QLabel *MuTitleBar::titleLabel() const
+QLabel *CustomTitleBar::titleLabel() const
 {
     return m_pTitleLabel;
 }
 
-void MuTitleBar::paintEvent(QPaintEvent *e)
+void CustomTitleBar::paintEvent(QPaintEvent *e)
 {
     Q_UNUSED(e)
 
@@ -128,7 +128,7 @@ void MuTitleBar::paintEvent(QPaintEvent *e)
     style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
 }
 
-void MuTitleBar::mouseDoubleClickEvent(QMouseEvent *event)
+void CustomTitleBar::mouseDoubleClickEvent(QMouseEvent *event)
 {
     Q_UNUSED(event);
     if (m_pWindow->GetHasMaxFun())
@@ -137,7 +137,7 @@ void MuTitleBar::mouseDoubleClickEvent(QMouseEvent *event)
     }
 }
 
-bool MuTitleBar::eventFilter(QObject *obj, QEvent *event)
+bool CustomTitleBar::eventFilter(QObject *obj, QEvent *event)
 {
     switch (event->type()) {
     case QEvent::WindowTitleChange: {
@@ -163,7 +163,7 @@ bool MuTitleBar::eventFilter(QObject *obj, QEvent *event)
     }
 }
 
-void MuTitleBar::onClicked()
+void CustomTitleBar::onClicked()
 {
     QPushButton *pButton = qobject_cast<QPushButton *>(sender());
     if (m_pWindow == nullptr) return;
@@ -192,7 +192,7 @@ void MuTitleBar::onClicked()
     }
 }
 
-void MuTitleBar::updateMaximize()
+void CustomTitleBar::updateMaximize()
 {
     if (m_pWindow != nullptr) {
         bool bMaximize = m_pWindow->IsMaxed();

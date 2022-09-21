@@ -5,14 +5,16 @@
 #include <QGraphicsDropShadowEffect>
 
 Widget::Widget(QWidget *parent)
-    : MuShadowWindow<QWidget>(parent, 6)
+    : ShadowWindow<QWidget>(parent, 6)
     , ui(new Ui::Widget)
 {
     ui->setupUi(this->GetClientWidget());
     this->resize(800,600);
 
 //    this->SetResizeable(false);
-    this->SetMoveable(true);
+//    this->SetMoveable(false);
+//    this->SetHasMaxFun(false);
+    this->setWindowTitle("测试程序");
 }
 
 Widget::~Widget()

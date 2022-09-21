@@ -14,34 +14,7 @@ class WidgetData;
 class FramelessHelper;
 
 template<typename T>
-class MuShadowWindow;
-
-class LinuxRubberBand : public QRubberBand
-{
-public:
-    LinuxRubberBand(Shape s, QWidget *p = 0)
-        : QRubberBand(s, p) {
-        QPalette palette;
-        palette.setBrush(QPalette::WindowText, QBrush(Qt::lightGray));
-        setPalette(palette);
-        repaint();
-    }
-
-protected:
-    virtual void paintEvent(QPaintEvent *) {
-        QStylePainter painter(this);
-        QStyleOptionFocusRect option;
-        option.initFrom(this);
-
-        QPen pen;
-        pen.setStyle(Qt::DashLine);
-        pen.setWidth(1);
-        pen.setColor(QColor(Qt::red));
-        painter.setPen(pen);
-        painter.drawControl(QStyle::CE_FocusFrame, option);
-    }
-
-};
+class ShadowWindow;
 
 /*****
  * CursorPosCalculator
@@ -97,7 +70,7 @@ private:
 
 private:
     FramelessHelper*    m_pHelper = nullptr;
-    MuShadowWindow<QWidget>* m_pWidget;
+    ShadowWindow<QWidget>* m_pWidget;
     QPoint m_startMovePos;
     QRect m_resizeDlg;
     CursorPosCalculator m_pressedMousePos;
