@@ -205,8 +205,8 @@ private:
     FramelessHelper*    m_pHelper = nullptr;
 };
 
-typedef ShadowWindow<QWidget> MuCustomWindowWidget;
-typedef ShadowWindow<QDialog> MuCustomDialogWidget;
-typedef ShadowWindow<QMessageBox> MuCustomMessageBoxWidget;
+typedef ShadowWindow<QWidget> CustomWindowWidget;
+typedef ShadowWindow<QDialog> CustomDialogWidget;
+typedef ShadowWindow<QMessageBox> CustomMessageBoxWidget;
 
 #endif // MUSHADOWWINDOW_H
