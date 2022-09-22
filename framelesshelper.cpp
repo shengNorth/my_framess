@@ -191,8 +191,11 @@ void WidgetData::handleMousePressEvent(QMouseEvent *event)
         m_bLeftButtonPressed = true;
         int shadowWidth = m_pWidget->GetShadowWidth();
         int titleHeight = m_pWidget->GetTitleHeight();
+        int borderWidth = m_pWidget->GetBorderWidth();
 
-        m_bLeftButtonTitlePressed = event->pos().y() >= shadowWidth && event->pos().y() <= shadowWidth + titleHeight;
+        m_bLeftButtonTitlePressed = event->pos().y() > shadowWidth + borderWidth &&
+                event->pos().y() < shadowWidth + borderWidth + titleHeight;
+
         if (m_bLeftButtonTitlePressed)
         {
             m_startMovePos = event->globalPos();        //记录按下标题栏时候鼠标的位置
