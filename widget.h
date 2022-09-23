@@ -17,6 +17,8 @@ public:
     Widget(QWidget *parent = nullptr);
     ~Widget();
 
+    virtual void OnBtnCloseClicked() override;
+
 private:
     Ui::Widget *ui;
     FramelessHelper*    m_pHelper = nullptr;

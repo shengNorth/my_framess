@@ -2,8 +2,6 @@
 #include "ui_widget.h"
 #include <QTimer>
 
-#include <QGraphicsDropShadowEffect>
-
 Widget::Widget(QWidget *parent)
     : ShadowWindow<QWidget>(parent, 6)
     , ui(new Ui::Widget)
@@ -21,4 +19,5 @@ Widget::~Widget()
 {
     delete ui;
 }
+
 

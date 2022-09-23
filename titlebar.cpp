@@ -105,13 +105,6 @@ void CustomTitleBar::setMaximumVisible(bool maximum)
         m_pMaximizeButton->show();
 }
 
-void CustomTitleBar::setTitleHeight(int height)
-{
-    if (height < 0)
-        height = 0;
-    setFixedHeight(height);
-    emit HeightChanged(height);
-}
 
 QLabel *CustomTitleBar::titleLabel() const
 {

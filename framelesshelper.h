@@ -71,9 +71,10 @@ private:
 private:
     FramelessHelper*    m_pHelper = nullptr;
     ShadowWindow<QWidget>* m_pWidget;
-    QPoint m_startMovePos;
-    QRect m_resizeDlg;
     CursorPosCalculator m_pressedMousePos;
+
+    QPoint  m_startMovePos;
+    QRect   m_resizeDlg;
     bool m_bLeftButtonPressed;          //鼠标是否按下
     bool m_bLeftButtonTitlePressed;     //鼠标是否按在标题栏上
 };

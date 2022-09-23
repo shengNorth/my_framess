@@ -133,55 +133,55 @@ void WidgetData::resizeWidget(const QPoint &pos)
     QRect origRect = m_resizeDlg;
     int shadowWidget = m_pWidget->GetShadowWidth();
 
-        int left = origRect.left();
-        int top = origRect.top();
-        int right = origRect.right();
-        int bottom = origRect.bottom();
-        origRect.getCoords(&left, &top, &right, &bottom);
+    int left = origRect.left();
+    int top = origRect.top();
+    int right = origRect.right();
+    int bottom = origRect.bottom();
+    origRect.getCoords(&left, &top, &right, &bottom);
 
-        int minWidth = 200;
-        int minHeight = 100;
+    int minWidth = 200;
+    int minHeight = 100;
 
-        if (m_pressedMousePos.m_bOnTopLeftEdge) {
-            left = pos.x() - shadowWidget;
-            top = pos.y() - shadowWidget;
-        } else if (m_pressedMousePos.m_bOnBottomLeftEdge) {
-            left = pos.x() - shadowWidget;
-            bottom = pos.y() + shadowWidget;
-        } else if (m_pressedMousePos.m_bOnTopRightEdge) {
-            right = pos.x() + shadowWidget;
-            top = pos.y() - shadowWidget;
-        } else if (m_pressedMousePos.m_bOnBottomRightEdge) {
-            right = pos.x() + shadowWidget;
-            bottom = pos.y() + shadowWidget;
-        } else if (m_pressedMousePos.m_bOnLeftEdge) {
-            left = pos.x() - shadowWidget;
-        } else if (m_pressedMousePos.m_bOnRightEdge) {
-            right = pos.x() + shadowWidget;
-        } else if (m_pressedMousePos.m_bOnTopEdge) {
-            top = pos.y() - shadowWidget;
-        } else if (m_pressedMousePos.m_bOnBottomEdge) {
-            bottom = pos.y() + shadowWidget;
+    if (m_pressedMousePos.m_bOnTopLeftEdge) {
+        left = pos.x() - shadowWidget;
+        top = pos.y() - shadowWidget;
+    } else if (m_pressedMousePos.m_bOnBottomLeftEdge) {
+        left = pos.x() - shadowWidget;
+        bottom = pos.y() + shadowWidget;
+    } else if (m_pressedMousePos.m_bOnTopRightEdge) {
+        right = pos.x() + shadowWidget;
+        top = pos.y() - shadowWidget;
+    } else if (m_pressedMousePos.m_bOnBottomRightEdge) {
+        right = pos.x() + shadowWidget;
+        bottom = pos.y() + shadowWidget;
+    } else if (m_pressedMousePos.m_bOnLeftEdge) {
+        left = pos.x() - shadowWidget;
+    } else if (m_pressedMousePos.m_bOnRightEdge) {
+        right = pos.x() + shadowWidget;
+    } else if (m_pressedMousePos.m_bOnTopEdge) {
+        top = pos.y() - shadowWidget;
+    } else if (m_pressedMousePos.m_bOnBottomEdge) {
+        bottom = pos.y() + shadowWidget;
+    }
+
+    QRect newRect(QPoint(left, top), QPoint(right, bottom));
+
+    if (newRect.isValid())
+    {
+        if (newRect.width() < minWidth) {
+            if (left != origRect.left())
+                newRect.setLeft(origRect.right() - minWidth);
+            else
+                newRect.setRight(origRect.left() + minWidth);
         }
-
-        QRect newRect(QPoint(left, top), QPoint(right, bottom));
-
-        if (newRect.isValid())
-        {
-            if (newRect.width() < minWidth) {
-                if (left != origRect.left())
-                    newRect.setLeft(origRect.right() - minWidth);
-                else
-                    newRect.setRight(origRect.left() + minWidth);
-            }
-            if (newRect.height() < minHeight) {
-                if (top != origRect.top())
-                    newRect.setTop(origRect.bottom() - minHeight);
-                else
-                    newRect.setBottom(origRect.top() + minHeight);
-            }
-            m_pWidget->setGeometry(newRect);
+        if (newRect.height() < minHeight) {
+            if (top != origRect.top())
+                newRect.setTop(origRect.bottom() - minHeight);
+            else
+                newRect.setBottom(origRect.top() + minHeight);
         }
+        m_pWidget->setGeometry(newRect);
+    }
 }
 
 void WidgetData::handleMousePressEvent(QMouseEvent *event)
@@ -219,12 +219,12 @@ void WidgetData::handleMouseReleaseEvent(QMouseEvent *event)
 void WidgetData::handleMouseMoveEvent(QMouseEvent *event)
 {
     if (m_bLeftButtonPressed) {
-        if (m_pHelper->m_bWidgetResizable && m_pressedMousePos.m_bOnEdges)
+        if (m_pHelper->m_bWidgetResizable && m_pressedMousePos.m_bOnEdges && !m_bLeftButtonTitlePressed)
         {
             //鼠标按在边界上,拖拽缩放
             resizeWidget(event->globalPos());
         }
-        else if (m_pHelper->m_bWidgetMovable && m_bLeftButtonTitlePressed) {
+        else if (m_pHelper->m_bWidgetMovable && m_bLeftButtonTitlePressed && !m_pressedMousePos.m_bOnEdges) {
             //鼠标按在标题栏上拖拽
             QPoint moveOffset = event->globalPos() - m_startMovePos;
 

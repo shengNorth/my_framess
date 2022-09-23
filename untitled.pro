@@ -16,14 +16,18 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    Framelesshelper.cpp \
+    Titlebar.cpp \
     framelesshelper.cpp \
     main.cpp \
     titlebar.cpp \
     widget.cpp
 
 HEADERS += \
+    Framelesshelper.h \
     ShadowWindow.h \
     ShadowWindow.h \
+    TitleBar.h \
     framelesshelper.h \
     titlebar.h \
     widget.h

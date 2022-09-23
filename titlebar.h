@@ -1,17 +1,5 @@
-﻿/**
- * 自定义无边框窗体、对话框和提示框
- *
- * CustomTitleBar.h
- * 自定义窗体的标题栏。
- *
- * FlyWM_
- * GitHub: https://github.com/FlyWM
- * CSDN: https://blog.csdn.net/a844651990
- *
- */
-
-#ifndef MUTITLEBAR_H
-#define MUTITLEBAR_H
+﻿#ifndef TITLEBAR_H
+#define TITLEBAR_H
 
 #include <QWidget>
 
@@ -30,8 +18,6 @@ public:
 
     void setMinimumVisible(bool minimum);
     void setMaximumVisible(bool maximum);
-
-    void setTitleHeight(int height);
 
     QWidget *customWidget() const;
     QPushButton *minimizeButton() const;
@@ -63,11 +49,6 @@ private slots:
      */
     void onClicked();
 
-signals:
-    void ShowMaximized();
-    void ShowNormal();
-    void HeightChanged(int height);
-
 private:
     /**
      * @brief updateMaximize update the button status
@@ -85,4 +66,4 @@ private:
     ShadowWindow<QWidget>*    m_pWindow = nullptr;
 };
 
-#endif // MUTITLEBAR_H
+#endif // TITLEBAR_H
