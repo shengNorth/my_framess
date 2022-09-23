@@ -13,11 +13,17 @@ Widget::Widget(QWidget *parent)
 //    this->SetMoveable(false);
 //    this->SetHasMaxFun(false);
     this->setWindowTitle("测试程序");
+    this->setMouseTracking(true);
 }
 
 Widget::~Widget()
 {
     delete ui;
+}
+
+void Widget::mousePressEvent(QMouseEvent *event)
+{
+    qDebug() << ui->label->frameGeometry() << ui->label->rect() << event->pos();
 }
 
 

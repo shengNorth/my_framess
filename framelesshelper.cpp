@@ -303,7 +303,7 @@ bool FramelessHelper::eventFilter(QObject *obj, QEvent *event)
     if (event->type() == QEvent::MouseMove || event->type() == QEvent::HoverMove || event->type() == QEvent::MouseButtonPress || event->type() == QEvent::MouseButtonRelease || event->type() == QEvent::Leave) {
         if (m_widgetData) {
             m_widgetData->handleWidgetEvent(event);
-            return true;
+            return false;
         }
     }
     return QObject::eventFilter(obj, event);

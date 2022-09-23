@@ -17,6 +17,8 @@ public:
     Widget(QWidget *parent = nullptr);
     ~Widget();
 
+
+    void mousePressEvent(QMouseEvent* event) override;
 private:
     Ui::Widget *ui;
 };
