@@ -9,7 +9,7 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class Widget; }
 QT_END_NAMESPACE
 
-class Widget : public ShadowWindow<QWidget>
+class Widget : public CustomWindowWidget
 {
     Q_OBJECT
 
@@ -17,10 +17,7 @@ public:
     Widget(QWidget *parent = nullptr);
     ~Widget();
 
-    virtual void OnBtnCloseClicked() override;
-
 private:
     Ui::Widget *ui;
-    FramelessHelper*    m_pHelper = nullptr;
 };
 #endif // WIDGET_H
