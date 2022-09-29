@@ -9,10 +9,10 @@ int main(int argc, char *argv[])
     Widget w;
     w.show();
 
-        QFile qss(":/style.qss");
-        qss.open(QFile::ReadOnly);
-        qApp->setStyleSheet(qss.readAll());
-        qss.close();
+    QFile qss(":/style.qss");
+    qss.open(QFile::ReadOnly);
+    qApp->setStyleSheet(qss.readAll());
+    qss.close();
 
     return a.exec();
 }

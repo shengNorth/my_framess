@@ -9,14 +9,13 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class Widget; }
 QT_END_NAMESPACE
 
-class Widget : public CustomWindowWidget
+class Widget : public CustomWindow
 {
     Q_OBJECT
 
 public:
     Widget(QWidget *parent = nullptr);
     ~Widget();
-
 
     void mousePressEvent(QMouseEvent* event) override;
 private:

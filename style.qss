@@ -1,12 +1,5 @@
-﻿/*
- * titleBar
- */
-CustomTitleBar#titleBar {
-    background-color: #c62f2f;
-}
-CustomTitleBar#aeroTitleBar {
-    background-color: #4696ff;
-}
+﻿CustomTitleBar#titleBar {background-color: #c62f2f;}
+QLabel#titleLabel {color: white;font-family: 'Microsoft Yahei';}
 
 QPushButton#minimizeButton{background:transparent;border:none;image:url(:/button/min_normal.png)}
 QPushButton#minimizeButton:hover{background:transparent;border:none;image:url(:/button/min_hover.png)}
@@ -23,14 +16,3 @@ QPushButton#maximizeButton[maximizeProperty=restore]:pressed{background:transpar
 QPushButton#closeButton{background:transparent;border:none;image:url(:/button/close_normal.png)}
 QPushButton#closeButton:hover{background:transparent;border:none;image:url(:/button/close_hover.png)}
 QPushButton#closeButton:pressed{background:transparent;border:none;image:url(:/button/close_press.png)}
-
-QLabel#titleLabel {
-    color: white;
-    font-family: 'Microsoft Yahei';
-}
-/*************************************************/
-
-QLabel#dialogTitleLabel {
-    color: black;
-    font-family: 'Microsoft Yahei';
-}

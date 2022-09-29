@@ -183,13 +183,13 @@ private:
     QRect               m_restoreRect;      //restore rect
     QWidget*            m_pClientWidget = nullptr;
     QPixmap             m_shadowBackPixmap;
-    CustomTitleBar*         m_titleBar = nullptr;
+    CustomTitleBar*     m_titleBar = nullptr;
     QVBoxLayout*        m_vBoxLayout = nullptr;
     FramelessHelper*    m_pHelper = nullptr;
 };
 
-typedef ShadowWindow<QWidget> CustomWindowWidget;
-typedef ShadowWindow<QDialog> CustomDialogWidget;
-typedef ShadowWindow<QMessageBox> CustomMessageBoxWidget;
+typedef ShadowWindow<QWidget> CustomWindow;
+typedef ShadowWindow<QDialog> CustomDialog;
+typedef ShadowWindow<QMessageBox> CustomMessageBox;
 
 #endif // SHADOWWINDOW_H
