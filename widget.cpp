@@ -3,7 +3,7 @@
 #include <QTimer>
 
 Widget::Widget(QWidget *parent)
-    : ShadowWindow<QWidget>(parent, 6)
+    : CustomWindow(parent, 6)
     , ui(new Ui::Widget)
 {
     ui->setupUi(this->GetClientWidget());

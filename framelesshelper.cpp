@@ -5,7 +5,6 @@
 #include <QDesktopWidget>
 
 
-/***** CursorPosCalculator *****/
 CursorPosCalculator::CursorPosCalculator()
 {
     reset();
