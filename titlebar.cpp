@@ -14,10 +14,10 @@
 #include "framelesshelper.h"
 #include "ShadowWindow.h"
 
-CustomTitleBar::CustomTitleBar(QWidget *parent, QWidget *window)
+CustomTitleBar::CustomTitleBar(QWidget *parent)
     : QWidget(parent)
 {
-    m_pWindow = static_cast<ShadowWindow<QWidget>*>(window);
+    m_pWindow = static_cast<ShadowWindow<QWidget>*>(parent);
     m_pIconLabel = new QLabel(this);
     m_pTitleLabel = new QLabel(this);
     m_pMinimizeButton = new QPushButton(this);

@@ -13,7 +13,7 @@ class  CustomTitleBar : public QWidget
 {
     Q_OBJECT
 public:
-    explicit CustomTitleBar(QWidget *parent, QWidget *window);
+    explicit CustomTitleBar(QWidget *parent);
     ~CustomTitleBar();
 
     void setMinimumVisible(bool minimum);

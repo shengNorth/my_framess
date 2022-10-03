@@ -10,6 +10,7 @@ class QPainter;
 class QLineEdit;
 class QLabel;
 
+
 template <class Base = QWidget>
 class ShadowWindow : public Base
 {
@@ -29,10 +30,13 @@ public:
         m_vBoxLayout->setSpacing(0);
 
         //添加标题栏
-        m_titleBar =  new CustomTitleBar(this, this);
+        m_titleBar =  new QWidget(this);
+        QHBoxLayout* titleLayout = new QHBoxLayout(m_titleBar);
+        //支持自定义标题栏
+        titleLayout->setContentsMargins(0,0,0,0);
+        m_titleBar->setLayout(titleLayout);
         m_titleBar->setFixedHeight(m_titleHeight);
-        this->installEventFilter(m_titleBar);
-        m_titleBar->setObjectName("titleBar");
+
         m_vBoxLayout->addWidget(m_titleBar);
 
         //添加 CenterWidget
@@ -64,7 +68,7 @@ public:
 
     virtual void OnBtnMinClicked()
     {
-         showMinimized();
+        showMinimized();
     }
 
     virtual void OnBtnMaxClicked()
@@ -75,7 +79,7 @@ public:
         int currentScreen = QApplication::desktop()->screenNumber(this);//程序所在的屏幕编号
         QRect rect = QApplication::desktop()->availableGeometry(currentScreen);//程序所在屏幕可用尺寸
         setGeometry(rect.left() - m_shadowWidth, rect.top() - m_shadowWidth,
-                     rect.width() + m_shadowWidth * 2, rect.height() + m_shadowWidth * 2);
+                    rect.width() + m_shadowWidth * 2, rect.height() + m_shadowWidth * 2);
     }
 
     virtual void OnBtnRestoreClicked()
@@ -94,7 +98,6 @@ public:
     int GetBorderWidth() const { return m_borderWidth; }
     int GetTitleHeight() const { return m_titleHeight; }
     QWidget* GetClientWidget()   { return m_pClientWidget; }
-    CustomTitleBar* GetTitleBar() { return m_titleBar; }
 
     void SetResizeable(bool enable) { m_pHelper->setWidgetResizable(enable); }
     bool GetResizeable() const { return m_pHelper->widgetResizable(); }
@@ -103,9 +106,11 @@ public:
     void SetHasMaxFun(bool has){ m_bHasMaxFun = has; ShowMaxBtn(has);}
     bool GetHasMaxFun() const { return m_bHasMaxFun; }
 
-    //是否显示最大化最小化按钮
-    void ShowMinBtn(bool show) { m_titleBar->setMinimumVisible(show);}
-    void ShowMaxBtn(bool show) { m_titleBar->setMaximumVisible(show);}
+    /**
+     * @brief GetTitleLayout    获取标题栏的水平布局, 用于完全自定义标题栏
+     * @return
+     */
+    QLayout* GetTitleLayout() { return m_titleBar->layout(); }
 
 protected:
     QPixmap NinePatchScalePixmap(QString picName, int iHorzSplit, int iVertSplit, int DstWidth, int DstHeight)
@@ -159,7 +164,7 @@ protected:
     virtual void resizeEvent(QResizeEvent *event) override
     {
         m_shadowBackPixmap = NinePatchScalePixmap(":/button/border_shadow.png",
-            m_shadowWidth, m_shadowWidth, this->width(), this->height());
+                                                  m_shadowWidth, m_shadowWidth, this->width(), this->height());
         return QWidget::resizeEvent(event);
     }
 
@@ -171,8 +176,8 @@ protected:
         painter.fillRect(this->rect().adjusted(m_shadowWidth, m_shadowWidth, -m_shadowWidth, -m_shadowWidth),
                          QBrush(Qt::white));
     }
-private:
 
+private:
     bool        m_bMaximized = false;       //当前是否为最大化状态
     bool        m_bHasMaxFun = true;        //是否有最大化功能
     int         m_borderWidth = 3;
@@ -180,12 +185,38 @@ private:
     int         m_titleHeight = 32;
 
 
-    QRect               m_restoreRect;      //restore rect
+    QRect               m_restoreRect;              //restore rect
+    QWidget*            m_titleBar = nullptr;
     QWidget*            m_pClientWidget = nullptr;
     QPixmap             m_shadowBackPixmap;
-    CustomTitleBar*     m_titleBar = nullptr;
     QVBoxLayout*        m_vBoxLayout = nullptr;
     FramelessHelper*    m_pHelper = nullptr;
+};
+
+class CustomFrame : public ShadowWindow<QWidget>
+{
+public:
+    CustomFrame(QWidget* parent = nullptr, int shadowWidth = 6):
+        ShadowWindow<QWidget>(parent, shadowWidth)
+    {
+        m_titleBar = new CustomTitleBar(this);
+        this->installEventFilter(m_titleBar);
+        m_titleBar->setObjectName("titleBar");
+        this->GetTitleLayout()->addWidget(m_titleBar);
+    }
+
+    CustomFrame(const CustomFrame& ) = delete;
+
+public:
+    //是否显示最大化最小化按钮
+    void ShowMinBtn(bool show) { m_titleBar->setMinimumVisible(show);}
+    void ShowMaxBtn(bool show) { m_titleBar->setMaximumVisible(show);}
+
+    //获取自定义标题栏
+    CustomTitleBar* GetTitleBar() { return m_titleBar; }
+
+private:
+    CustomTitleBar* m_titleBar = nullptr;
 };
 
 using CustomWindow = ShadowWindow<QWidget>;
