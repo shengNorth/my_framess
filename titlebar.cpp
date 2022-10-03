@@ -1,16 +1,4 @@
-﻿/**
- * 自定义无边框窗体、对话框和提示框
- *
- * CustomTitleBar.cpp
- * 自定义窗体的标题栏。
- *
- * FlyWM_
- * GitHub: https://github.com/FlyWM
- * CSDN: https://blog.csdn.net/a844651990
- *
- */
-
-#include <QLabel>
+﻿#include <QLabel>
 #include <QPushButton>
 #include <QHBoxLayout>
 #include <QEvent>
